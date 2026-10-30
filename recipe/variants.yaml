@@ -1,0 +1,27 @@
+---
+# Variant configuration for local builds with rattler-build. On conda-forge, these
+# values come from the global conda-forge-pinning instead, so this file is not part of
+# the feedstock recipe.
+c_stdlib:
+  - if: linux
+    then: sysroot
+  - if: osx
+    then: macosx_deployment_target
+  - if: win
+    then: vs
+c_stdlib_version:
+  - if: linux
+    then: '2.17'
+  - if: osx and arm64
+    then: '11.0'
+  - if: osx and x86_64
+    then: '10.13'
+  - if: win
+    then: '2022'
+c_compiler:
+  - if: win
+    then: vs2022
+# Build for one Python version only to keep local builds fast. conda-forge builds one
+# package per supported Python version.
+python:
+  - '3.14'

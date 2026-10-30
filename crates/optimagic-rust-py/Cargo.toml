@@ -1,0 +1,29 @@
+[package]
+name = "optimagic-rust-py"
+description = "Python bindings for optimagic-rust."
+# The bindings are distributed as a Python package (via maturin), not on crates.io.
+publish = false
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "optimagic_rust_py"
+# cdylib: a C-compatible shared library, i.e. a Python extension module.
+crate-type = ["cdylib"]
+# The bindings are tested from Python (see tests/ at the repository root). A Rust test
+# binary would have to embed Python, which needs extra linker setup.
+test = false
+doctest = false
+
+[dependencies]
+optimagic-rust.workspace = true
+ndarray.workspace = true
+numpy.workspace = true
+pyo3.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,45 @@
+# ======================================================================================
+# Cargo workspace
+# ======================================================================================
+# The workspace bundles all Rust crates of this repository. They share one Cargo.lock,
+# one target/ directory and the metadata and dependency versions declared below.
+#
+# - crates/optimagic-rust: the algorithms, in pure Rust (no Python dependency).
+# - crates/optimagic-rust-py: the Python bindings (PyO3), compiled by maturin into the
+#   extension module `optimagic_rust._core`.
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+# Minimum supported Rust version (MSRV). The toolchain used for development and CI is
+# pinned in rust-toolchain.toml and can be newer.
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/optimagic-dev/optimagic-rust"
+authors = ["Janos Gabler <janos.gabler@gmail.com>"]
+
+[workspace.dependencies]
+optimagic-rust = { path = "crates/optimagic-rust" }
+approx = "0.5"
+ndarray = "0.17"
+numpy = "0.30"
+# abi3-py312: build against the stable ABI of Python 3.12, so one wheel per platform
+# works on all Python versions >= 3.12.
+pyo3 = { version = "0.30", features = ["abi3-py312"] }
+thiserror = "2"
+
+# Lints apply to every crate that opts in with `[lints] workspace = true`.
+[workspace.lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[profile.release]
+# Slower compilation, faster code. Used for wheels and conda packages.
+codegen-units = 1
+lto = "fat"

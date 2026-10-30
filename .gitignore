@@ -1,0 +1,43 @@
+# AI
+CLAUDE.md
+
+# Rust build output
+/target/
+
+# Compiled Python extension (maturin develop copies it into python/optimagic_rust/)
+*.so
+*.pyd
+*.dll
+*.dylib
+
+# Python byte code and caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+wheels/
+
+# rattler-build output (conda packages)
+/output/
+
+# Environments
+.pixi/
+.venv/
+venv/
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+*.bak

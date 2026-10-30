@@ -1,0 +1,96 @@
+---
+repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+        # - id: identity  # Prints all files passed to pre-commits. Debugging.
+  - repo: https://github.com/lyz-code/yamlfix
+    rev: 1.19.1
+    hooks:
+      - id: yamlfix
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args:
+          - --maxkb=2500
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+        types:
+          - text
+      - id: forbid-submodules
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
+        description: Forces to replace line ending by the UNIX 'lf' character.
+      - id: name-tests-test
+        args:
+          - --pytest-test-first
+      - id: no-commit-to-branch
+        args:
+          - --branch
+          - main
+      - id: trailing-whitespace
+      - id: check-ast
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      # Run the linter.
+      - id: ruff-check
+        types_or:
+          - python
+          - pyi
+        args:
+          - --fix
+      # Run the formatter.
+      - id: ruff-format
+        types_or:
+          - python
+          - pyi
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-gfm-alerts
+          - mdformat-ruff
+        args:
+          - --wrap
+          - '88'
+        files: (README\.md|CHANGES\.md)
+  # Rust hooks use the locally installed toolchain (see rust-toolchain.toml). They are
+  # skipped on pre-commit.ci, which has no Rust toolchain; GitHub Actions runs them.
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --all
+        language: system
+        types:
+          - rust
+        pass_filenames: false
+      # Runs through pixi, because PyO3 needs a Python >= 3.12 interpreter to compile.
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: pixi run clippy
+        language: system
+        types:
+          - rust
+        pass_filenames: false
+ci:
+  autoupdate_schedule: monthly
+  skip:
+    - cargo-fmt
+    - cargo-clippy

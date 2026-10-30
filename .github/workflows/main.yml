@@ -1,0 +1,122 @@
+---
+# Tests, linting and type checking. Runs on every pull request and every push to main.
+permissions:
+  contents: read
+name: main
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  rust:
+    name: Rust format, lint, tests and docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the Rust toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0  # v2.9.3
+        with:
+          save-if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      # pixi provides the Python interpreter that PyO3 needs to compile the bindings.
+      - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94  # v0.11.2
+        with:
+          pixi-version: v0.71.2
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          frozen: true
+          environments: default
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Run clippy
+        run: pixi run clippy
+      - name: Run Rust tests
+        run: pixi run tests-rust
+      - name: Build Rust docs
+        run: pixi run cargo doc --workspace --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+  run-tests:
+    name: Run Python tests on ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python-version:
+          - '312'
+          - '313'
+          - '314'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the Rust toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0  # v2.9.3
+        with:
+          key: py${{ matrix.python-version }}
+          save-if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94  # v0.11.2
+        with:
+          pixi-version: v0.71.2
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          frozen: true
+          environments: tests-py${{ matrix.python-version }}
+      - name: Compile and run pytest
+        shell: bash -el {0}
+        run: pixi run -e tests-py${{ matrix.python-version }} tests-python
+  run-type-checks:
+    name: Run ty and stubtest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the Rust toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0  # v2.9.3
+        with:
+          save-if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94  # v0.11.2
+        with:
+          pixi-version: v0.71.2
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          frozen: true
+          environments: type-checking
+      - name: Run ty
+        shell: bash -el {0}
+        run: pixi run -e type-checking ty --output-format github
+      - name: Run stubtest
+        shell: bash -el {0}
+        run: pixi run -e type-checking stubtest
+  build-conda-package:
+    name: Build and test the conda package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94  # v0.11.2
+        with:
+          pixi-version: v0.71.2
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          frozen: true
+          environments: conda-build
+      - name: Build and test with rattler-build
+        shell: bash -el {0}
+        run: pixi run -e conda-build build-conda

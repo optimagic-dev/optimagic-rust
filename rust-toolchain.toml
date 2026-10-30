@@ -1,0 +1,7 @@
+# Pins the Rust toolchain for development and CI. rustup reads this file and installs
+# the toolchain automatically the first time cargo runs in this directory.
+# Bump the version deliberately; new clippy versions add new lints.
+[toolchain]
+channel = "1.99.1"
+components = ["clippy", "rustfmt"]
+profile = "minimal"
