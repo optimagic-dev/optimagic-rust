@@ -434,10 +434,11 @@ versions in `pixi.lock` (`frozen: true`). After changing dependencies in
    before the upload to PyPI starts.
 1. **pre-commit.ci (done).** The optimagic-dev installation of
    [pre-commit.ci](https://pre-commit.ci) covers this repository.
-1. **Branch protection (done).** As in optimagic, `main` requires a pull request with
-   one approving review and passing, up-to-date status checks (*Settings → Branches*):
-   `pre-commit.ci - pr` and all jobs of `main.yml`. The required checks are listed by
-   job name, so update them when the test matrix in `main.yml` changes.
+1. **Branch protection (done).** `main` requires a pull request and passing, up-to-date
+   status checks (*Settings → Branches*): `pre-commit.ci - pr` and all jobs of
+   `main.yml`. Unlike optimagic, it requires no approving review for now. The required
+   checks are listed by job name, so update them when the test matrix in `main.yml`
+   changes.
 
 ### First release
 
