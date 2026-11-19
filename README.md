@@ -409,8 +409,8 @@ pixi exec -c ./output -c conda-forge -s optimagic-rust -s python \
 
 | Workflow                               | Trigger                | What it does                                                                                                                                                                |
 | -------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/main.yml`           | PRs, pushes to `main`  | rustfmt, clippy, Rust tests and docs; Python tests on Linux/macOS/Windows × Python 3.12–3.14; ty and stubtest; builds and tests the conda package                           |
-| `.github/workflows/release.yml`        | PRs, `main`, tags `v*` | builds wheels (manylinux and musllinux x86_64/aarch64, macOS x86_64/arm64, Windows x64) and the sdist; tests the wheels on Python 3.12 and 3.14; publishes to PyPI for tags |
+| `.github/workflows/main.yml`           | PRs, pushes to `main`  | rustfmt, clippy, Rust tests and docs; Python tests on Linux/macOS/Windows × Python 3.12–3.15; ty and stubtest; builds and tests the conda package                           |
+| `.github/workflows/release.yml`        | PRs, `main`, tags `v*` | builds wheels (manylinux and musllinux x86_64/aarch64, macOS x86_64/arm64, Windows x64) and the sdist; tests the wheels on Python 3.12 and 3.15; publishes to PyPI for tags |
 | [pre-commit.ci](https://pre-commit.ci) | PRs                    | runs the prek hooks (except the Rust ones) and updates their versions monthly                                                                                               |
 | Dependabot (`.github/dependabot.yml`)  | weekly                 | PRs to update GitHub Actions and Rust dependencies                                                                                                                          |
 
@@ -507,8 +507,8 @@ for all Python versions of optimagic's environments.
   and is re-raised as is.
 - **Callbacks receive copies.** User functions get a fresh numpy array on each call, so
   they cannot corrupt the algorithm's state by modifying their argument.
-- **Aligned with optimagic:** MIT license, Python 3.12–3.14, pixi environments and task
-  names, ruff rules, ty, prek hooks, pinned GitHub Actions, trusted publishing.
+- **Aligned with optimagic:** MIT license, Python 3.12 and newer, pixi environments and
+  task names, ruff rules, ty, prek hooks, pinned GitHub Actions, trusted publishing.
 
 ## Open decisions and future work
 
@@ -519,8 +519,6 @@ for all Python versions of optimagic's environments.
   probably the best fit.
 - **Releasing the GIL** with `py.detach` in functions that don't call back into Python.
 - **Free-threaded Python** (3.14t): requires separate, non-abi3 wheels.
-- **Python 3.15**: the abi3 wheels should already work; add it to the test matrix and
-  classifiers together with optimagic.
 - **Benchmarks** (e.g. criterion for Rust, pytest-benchmark for Python).
 - **Coverage** (cargo-llvm-cov for Rust, pytest-cov for Python, uploaded to Codecov).
 - **cargo-deny** to check licenses and security advisories of Rust dependencies.

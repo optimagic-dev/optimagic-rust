@@ -30,6 +30,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Rust",
     "Topic :: Scientific/Engineering",
     "Typing :: Typed",
@@ -185,7 +186,7 @@ platforms = ["linux-64", "osx-arm64", "win-64"]
 
 # --- Base dependencies (all environments, except conda-build) -------------------------
 [tool.pixi.dependencies]
-python = ">=3.12,<3.15"
+python = ">=3.12,<3.16"
 numpy = ">=2.0"
 maturin = ">=1.16,<2"
 # maturin develop uses pip to install the package into the environment.
@@ -207,6 +208,8 @@ python = "~=3.12.0"
 python = "~=3.13.0"
 [tool.pixi.feature.py314.dependencies]
 python = "~=3.14.0"
+[tool.pixi.feature.py315.dependencies]
+python = "~=3.15.0"
 
 # --- Feature: tests -----------------------------------------------------------------
 [tool.pixi.feature.tests.dependencies]
@@ -243,6 +246,7 @@ default = { features = ["tests", "py314"], solve-group = "py314" }
 tests-py312 = { features = ["tests", "py312"], solve-group = "py312" }
 tests-py313 = { features = ["tests", "py313"], solve-group = "py313" }
 tests-py314 = { features = ["tests", "py314"], solve-group = "py314" }
+tests-py315 = { features = ["tests", "py315"], solve-group = "py315" }
 # Type checking
 type-checking = { features = ["type-checking", "py314"], solve-group = "py314" }
 # Building the conda package (rattler-build brings its own Python and compilers)
