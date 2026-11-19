@@ -422,35 +422,55 @@ versions in `pixi.lock` (`frozen: true`). After changing dependencies in
 
 ### One-time setup
 
-1. **PyPI trusted publishing.** Log in at [pypi.org](https://pypi.org), go to *Your
-   account → Publishing → Add a new pending publisher* and enter: PyPI project name
-   `optimagic-rust`, owner `optimagic-dev`, repository `optimagic-rust`, workflow
-   `release.yml`, environment `pypi`. No API token or secret is needed.
+1. **PyPI trusted publishing (to do before the first release).** Log in at
+   [pypi.org](https://pypi.org) and go to *Account settings → Publishing → Add a new
+   pending publisher → GitHub* (if optimagic belongs to a PyPI organization, use the
+   organization's *Publishing* page instead). Enter: PyPI project name `optimagic-rust`,
+   owner `optimagic-dev`, repository name `optimagic-rust`, workflow name `release.yml`,
+   environment name `pypi`, and click *Add*. No API token or secret is needed. A pending
+   publisher does not reserve the name until the first upload.
 1. **GitHub environment (done).** The environment `pypi` (*Settings → Environments*)
    only accepts deployments from tags matching `v*` and requires a reviewer's approval
    before the upload to PyPI starts.
-1. **pre-commit.ci.** Enable the repository at [pre-commit.ci](https://pre-commit.ci)
-   (if the optimagic-dev installation does not already cover all repositories).
+1. **pre-commit.ci (done).** The optimagic-dev installation of
+   [pre-commit.ci](https://pre-commit.ci) covers this repository.
 1. **Branch protection (done).** As in optimagic, `main` requires a pull request with
    one approving review and passing, up-to-date status checks (*Settings → Branches*):
    `pre-commit.ci - pr` and all jobs of `main.yml`. The required checks are listed by
    job name, so update them when the test matrix in `main.yml` changes.
+
+### First release
+
+1. Set up PyPI trusted publishing, see [One-time setup](#one-time-setup).
+1. Release version 0.1.0 as described in [Each release](#each-release). Skip the first
+   step: the version in `Cargo.toml` is already 0.1.0.
+1. Submit the package to conda-forge, see [conda-forge](#conda-forge).
+1. Add optimagic-rust to optimagic's dependencies, see
+   [Using optimagic-rust from optimagic](#using-optimagic-rust-from-optimagic).
 
 ### Each release
 
 1. Bump `version` in the `[workspace.package]` section of `Cargo.toml` (the only place
    the version is defined; maturin passes it to the Python package) and run
    `pixi run cargo check` to update `Cargo.lock`.
-1. Update `CHANGES.md`, open a PR and merge it.
+1. In `CHANGES.md`, rename the section "Unreleased" to the new version and add the date,
+   e.g. `## 0.2.0 (2027-01-15)`. Open a PR and merge it.
 1. Tag the merge commit and push the tag:
    ```bash
+   git switch main && git pull
    git tag v0.2.0
    git push origin v0.2.0
    ```
 1. `release.yml` builds and tests all wheels and the sdist and checks that the tag
-   matches the version. The publish job then waits for approval: open the workflow run
-   in the *Actions* tab, click *Review deployments*, select `pypi` and approve. The job
-   uploads everything to PyPI.
+   matches the version. The publish job then waits for approval, and GitHub sends you an
+   email: open the workflow run in the *Actions* tab, click *Review deployments*, select
+   `pypi` and click *Approve and deploy*. The job uploads everything to PyPI.
+1. Check the release on [PyPI](https://pypi.org/project/optimagic-rust/) and install it
+   into a fresh environment:
+   ```bash
+   uv run --no-project --with optimagic-rust==0.2.0 -- \
+       python -c "import optimagic_rust; print(optimagic_rust.__version__)"
+   ```
 
 ### conda-forge
 
@@ -458,10 +478,19 @@ conda-forge packages are built by conda-forge, from the sdist on PyPI.
 
 - **First release:** fork
   [conda-forge/staged-recipes](https://github.com/conda-forge/staged-recipes) and add
-  `recipes/optimagic-rust/recipe.yaml`, based on `recipe/recipe.yaml` with two changes:
-  `source` becomes the PyPI sdist URL with its sha256, and `version` becomes a literal
-  string. `recipe/variants.yaml` is not needed. After the PR is merged, conda-forge
-  creates the repository `conda-forge/optimagic-rust-feedstock`, with you as maintainer.
+  `recipes/optimagic-rust/recipe.yaml`, copied from `recipe/recipe.yaml` with these
+  changes:
+
+  - `version` becomes a literal string, e.g. `version: "0.1.0"`.
+  - `source` becomes the URL of the sdist on PyPI plus its `sha256` (on PyPI, under
+    *Download files*, click *view hashes* next to the `.tar.gz`).
+  - `recipe/variants.yaml` is not needed; conda-forge provides the compilers and builds
+    one package per Python version.
+
+  Open a PR and address the comments of the conda-forge reviewers. After the PR is
+  merged, conda-forge creates the repository `conda-forge/optimagic-rust-feedstock`,
+  with you as maintainer.
+
 - **Later releases:** a conda-forge bot notices new PyPI releases and opens a PR on the
   feedstock. Merge it once CI passes.
 
