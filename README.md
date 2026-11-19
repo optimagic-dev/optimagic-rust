@@ -426,12 +426,15 @@ versions in `pixi.lock` (`frozen: true`). After changing dependencies in
    account → Publishing → Add a new pending publisher* and enter: PyPI project name
    `optimagic-rust`, owner `optimagic-dev`, repository `optimagic-rust`, workflow
    `release.yml`, environment `pypi`. No API token or secret is needed.
-1. **GitHub environment.** In the repository settings, under *Environments*, create an
-   environment `pypi`. Optionally, add yourself as required reviewer, so each release
-   waits for your approval.
+1. **GitHub environment (done).** The environment `pypi` (*Settings → Environments*)
+   only accepts deployments from tags matching `v*` and requires a reviewer's approval
+   before the upload to PyPI starts.
 1. **pre-commit.ci.** Enable the repository at [pre-commit.ci](https://pre-commit.ci)
    (if the optimagic-dev installation does not already cover all repositories).
-1. **Branch protection.** Protect `main` and require the CI checks to pass.
+1. **Branch protection (done).** As in optimagic, `main` requires a pull request with
+   one approving review and passing, up-to-date status checks (*Settings → Branches*):
+   `pre-commit.ci - pr` and all jobs of `main.yml`. The required checks are listed by
+   job name, so update them when the test matrix in `main.yml` changes.
 
 ### Each release
 
@@ -444,8 +447,10 @@ versions in `pixi.lock` (`frozen: true`). After changing dependencies in
    git tag v0.2.0
    git push origin v0.2.0
    ```
-1. `release.yml` builds and tests all wheels and the sdist, checks that the tag matches
-   the version and uploads everything to PyPI.
+1. `release.yml` builds and tests all wheels and the sdist and checks that the tag
+   matches the version. The publish job then waits for approval: open the workflow run
+   in the *Actions* tab, click *Review deployments*, select `pypi` and approve. The job
+   uploads everything to PyPI.
 
 ### conda-forge
 
@@ -574,3 +579,8 @@ Reading list, roughly in order:
   last resort, `cargo clean` deletes all compiled Rust code in `target/`.
 - **`target/` is large**: it holds all compiled Rust code and can grow to several GB
   over time. `cargo clean` deletes it; it is rebuilt on demand.
+- **The repository is in a Dropbox folder**: exclude the build directories from syncing,
+  otherwise Dropbox uploads several GB of compiled code. On macOS:
+  `xattr -w com.dropbox.ignored 1 target .pixi output` (on Windows, see Dropbox's help
+  on ignored files). Repeat it after `cargo clean` or deleting `.pixi`, because the
+  newly created directory is synced again.
